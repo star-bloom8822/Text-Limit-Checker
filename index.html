@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Limit Checker</title>
+    <style>
+        :root {
+            --bg-color: #0f131a;
+            --card-bg: #181f2c;
+            --text-primary: #f1f5f9;
+            --text-secondary: #9aa4b2;
+            --accent: #5358b5;
+            --accent-hover: #6d72d6;
+            --danger: #9c3a3a;
+            --success: #447353;
+            --warning: #C68B35;
+            --border: #263244;
+            --border-focus: #939bf7;
+            --textarea-bg: #090c12;
+            --card-hover: #202b3c;
+            --switch-bg: #3b4759;
+            --shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #D4CBC0;
+            --card-bg: #F0ECE6;
+            --text-primary: #3A322C;
+            --text-secondary: #403831;
+            --accent: #736356;
+            --accent-text: #FAF8F5;
+            --accent-hover: #7A695C;
+            --danger: #A04730;
+            --success: #637A49;
+            --warning: #92631E;
+            --border: #C2B9AE;
+            --border-focus: #5C4A3D;
+            --textarea-bg: #F7F5F2;
+            --card-hover: #F2EFEB;
+            --switch-bg: #D8D0C5;
+            --shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(16px, 4vw, 32px);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 980px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: clamp(24px, 4vw, 40px);
+            box-shadow: var(--shadow);
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+            margin-bottom: 4px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+            font-weight: 400;
+        }
+
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--textarea-bg);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 30px;
+        }
+
+        .theme-switch-label {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--switch-bg);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5px;
+            font-size: 11px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .preset-section {
+            background-color: var(--textarea-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+
+        .preset-category-title {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;            
+            margin-bottom: 13px;
+        }
+
+        .preset-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent);
+            background-color: var(--card-hover);
+        }
+
+        .preset-btn.active {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 230px;
+            background-color: var(--textarea-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            color: var(--text-primary);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .warnings-dropdown-wrapper {
+            position: relative;
+            display: inline-block;
+            min-width: 280px;
+        }
+
+        .warnings-toggle-btn {
+            background: var(--textarea-bg);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            font-weight: 600;
+            gap: 12px;
+        }
+
+        .warnings-toggle-btn:hover {
+            border-color: var(--accent);
+            background-color: var(--card-hover);
+        }
+
+        .warnings-content {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 340px;
+            max-width: 440px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 14px 32px rgba(0,0,0,0.3);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .warning-badge {
+            background: var(--warning);
+            color: #2B2622;
+            padding: 2px 7px;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        .warnings-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fold-indicator, .repetition-warning {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: var(--warning);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: var(--textarea-bg);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent);
+            background-color: var(--card-hover);
+        }
+
+        .progress-container {
+            margin-bottom: 28px;
+            background-color: var(--textarea-bg);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 16px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 10px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--success);
+            border-radius: 5px;
+            transition: width 0.2s ease, background-color 0.2s ease;
+        }
+
+        .progress-bar-fill.warning {
+            background-color: var(--warning);
+        }
+
+        .progress-bar-fill.exceeded {
+            background-color: var(--danger);
+        }
+
+        .limit-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .mode-toggle-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .mode-toggle-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--accent);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 14px;
+        }
+
+        .stat-card {
+            background-color: var(--textarea-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 12px;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .stat-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" role="main">
+        <div class="header-row">
+            <div>
+                <h1>Text Limit Checker</h1>
+                <p class="subtitle">Online and offline character limits with readability indicators and real-time writing insight</p>
+            </div>
+            <div class="theme-switch-wrapper">
+                <span class="theme-switch-label" id="themeLabel">Light / Dark</span>
+                <label class="switch" aria-label="Toggle dark and light mode">
+                    <input type="checkbox" id="themeCheckbox" onchange="toggleTheme()" aria-labelledby="themeLabel">
+                    <span class="slider">
+                        <span>☀️</span>
+                        <span>🌙</span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div class="preset-section">
+             <div class="preset-category-title" style="margin-bottom: 14px;"><span style="font-size: 0.88rem;">📲</span> Social Media Word Counter</div>
+             <div class="presets" role="toolbar" aria-label="Social Presets">
+                <button class="preset-btn" onclick="setLimit(160, 'Profile Bio', 160, false, this)">Short Bio (160)</button>
+                <button class="preset-btn active" onclick="setLimit(280, 'Micro Post', 280, false, this)">Short Post (280)</button>
+                <button class="preset-btn" onclick="setLimit(500, 'Thread Post', 500, false, this)">Medium Post (500)</button>
+                <button class="preset-btn" onclick="setLimit(2200, 'Photo Caption', 2200, false, this)">Feed Caption (2.2k)</button>
+                <button class="preset-btn" onclick="setLimit(3000, 'Professional Post', 3000, false, this)">Professional Post (3k)</button>
+                <button class="preset-btn" onclick="setLimit(4000, 'Video Caption', 4000, false, this)">Video Caption (4k)</button>
+                <button class="preset-btn" onclick="setLimit(5000, 'Video Description', 5000, false, this)">Long Description (5k)</button>
+                <button class="preset-btn" onclick="setLimit(63206, 'Community Post', 63206, false, this)">Extended Post (63k)</button>
+            </div>
+
+            <div class="preset-category-title" style="margin-top: 23px;"><span style="font-size: 0.80rem;">✏️</span> Academic Essays Word Counter</div>
+            <div class="presets">
+                <button class="preset-btn" onclick="setLimit(500, 'Word Limit', 0, true, this)">Short Essay (500)</button>
+                <button class="preset-btn" onclick="setLimit(1500, 'Word Limit', 0, true, this)">Standard Essay (1.5k)</button>
+                <button class="preset-btn" onclick="setLimit(5000, 'Word Limit', 0, true, this)">Research Paper (5k)</button>
+                <button class="preset-btn" onclick="setLimit(0, 'Unlimited', 0, false, this)">Free Draft (Unlimited)</button>
+            </div>
+        </div>
+
+        <div class="textarea-wrapper">
+            <textarea id="textInput" placeholder="Type or paste your text here (works completely offline)..." oninput="handleTextInput()" aria-label="Text input area"></textarea>
+        </div>
+
+        <div class="toolbar">
+            <div class="warnings-group">
+                <div class="fold-indicator" id="foldWarning" style="display: none;">
+                    ⚠️ Character limit reached (~<span id="foldCharNum"></span> chars)
+                </div>
+            </div>
+            
+            <div class="warnings-dropdown-wrapper" id="warningsDropdownWrapper" style="display: none;">
+                <button class="warnings-toggle-btn" onclick="toggleWarningsDropdown()" id="warningsToggleBtn">
+                    <span>⚠️ Essay Insight <span id="warningBadge" class="warning-badge" style="display:none;">0</span></span>
+                    <span id="dropdownArrow">▼</span>
+                </button>
+                
+                <div class="warnings-content" id="warningsContent" style="display: none;">
+                    <div class="warnings-group">
+                        <div class="repetition-warning" id="repetitionWarning" style="display: none;">
+                            🔄 Overused Words: <span id="repetitionList"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="flex-grow: 1;"></div>
+            
+            <div class="action-btns">
+                <button class="action-btn" onclick="cleanText()">✨ Clean</button>
+                <button class="action-btn" onclick="copyText()" id="copyBtn">📋 <span id="copyLabel">Copy</span></button>
+                <button class="action-btn" onclick="speakText()" id="speakBtn">🔊 <span id="speakLabel">Read</span></button>
+                <button class="action-btn" onclick="clearText()">🗑️ Clear</button>
+            </div>
+        </div>
+
+        <div class="progress-container" id="progressWrapper">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+            <div class="limit-status">
+                <span id="limitTypeText">Limit: 280 Characters</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="mode-toggle-btn" onclick="toggleDisplayMode()" id="displayModeToggle">View: Count / Limit</button>
+                    <span id="limitCountText">0 / 280</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="wordCount">0</div>
+                <div class="stat-label">Words</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="charCount">0</div>
+                <div class="stat-label">Characters</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="sentenceCount">0</div>
+                <div class="stat-label">Sentences</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="paragraphCount">0</div>
+                <div class="stat-label">Paragraphs</div>
+            </div>
+            <div class="stat-card" id="hashtagCard">
+                <div class="stat-value" id="hashtagCount">0</div>
+                <div class="stat-label">Hashtags</div>
+            </div>
+            <div class="stat-card" id="emojiCard">
+                <div class="stat-value" id="emojiCount">0</div>
+                <div class="stat-label">Emojis</div>
+            </div>
+            <div class="stat-card" id="citationCard" style="display: none;">
+                <div class="stat-value" id="citationCount">0</div>
+                <div class="stat-label">Citations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="readTime">0s</div>
+                <div class="stat-label">Read Time</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLimit = 280;
+        let isWordLimit = false;
+        let foldLimit = currentLimit;
+        let isEssayMode = false;
+        let displayMode = 'ratio';
+
+        const safeStorage = {
+            getItem(key) { try { return localStorage.getItem(key); } catch (e) { return null; } },
+            setItem(key, value) { try { localStorage.setItem(key, value); } catch (e) {} },
+            removeItem(key) { try { localStorage.removeItem(key); } catch (e) {} }
+        };
+
+        const savedTheme = safeStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeCheckbox').checked = (savedTheme === 'light');
+
+        const savedLimit = safeStorage.getItem('currentLimit');
+        if (savedLimit !== null) {
+            currentLimit = Number(savedLimit);
+            isWordLimit = safeStorage.getItem('isWordLimit') === 'true';
+            foldLimit = Number(safeStorage.getItem('foldLimit'));
+            isEssayMode = safeStorage.getItem('isEssayMode') === 'true';
+            updateModeUI();
+        }
+
+        const savedText = safeStorage.getItem('userText');
+        if (savedText) {
+            document.getElementById('textInput').value = savedText;
+        }
+        analyzeText();
+
+        function updateModeUI() {
+            const hashtagCard = document.getElementById('hashtagCard');
+            const emojiCard = document.getElementById('emojiCard');
+            const citationCard = document.getElementById('citationCard');
+            const warningsWrapper = document.getElementById('warningsDropdownWrapper');
+
+            if (isEssayMode) {
+                hashtagCard.style.display = 'none';
+                emojiCard.style.display = 'none';
+                citationCard.style.display = 'block';
+                warningsWrapper.style.display = 'inline-block';
+            } else {
+                hashtagCard.style.display = 'block';
+                emojiCard.style.display = 'block';
+                citationCard.style.display = 'none';
+                warningsWrapper.style.display = 'none';
+            }
+
+            const progressWrapper = document.getElementById('progressWrapper');
+            if (currentLimit === 0) {
+                progressWrapper.style.display = 'none';
+            } else {
+                progressWrapper.style.display = 'block';
+                document.getElementById('limitTypeText').innerText = `Limit: ${currentLimit.toLocaleString()} ${isWordLimit ? 'Words' : 'Characters'}`;
+            }
+        }
+
+        function toggleTheme() {
+            const isLight = document.getElementById('themeCheckbox').checked;
+            const newTheme = isLight ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            safeStorage.setItem('theme', newTheme);
+        }
+
+        function toggleWarningsDropdown() {
+            const content = document.getElementById('warningsContent');
+            const arrow = document.getElementById('dropdownArrow');
+            if (content.style.display === 'none') {
+                content.style.display = 'flex';
+                arrow.innerText = '▲';
+            } else {
+                content.style.display = 'none';
+                arrow.innerText = '▼';
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('warningsDropdownWrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                document.getElementById('warningsContent').style.display = 'none';
+                document.getElementById('dropdownArrow').innerText = '▼';
+            }
+        });
+
+        function toggleDisplayMode() {
+            displayMode = displayMode === 'ratio' ? 'remaining' : 'ratio';
+            document.getElementById('displayModeToggle').innerText = displayMode === 'ratio' ? 'View: Count / Limit' : 'View: Remaining';
+            analyzeText();
+        }
+
+        function setLimit(limit, name, fold, essayFlag, btnElement) {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+            
+            isWordLimit = name.includes('Word Limit');
+            currentLimit = limit;
+            foldLimit = fold;
+            isEssayMode = essayFlag;
+            
+            safeStorage.setItem('currentLimit', currentLimit);
+            safeStorage.setItem('isWordLimit', isWordLimit);
+            safeStorage.setItem('foldLimit', foldLimit);
+            safeStorage.setItem('isEssayMode', isEssayMode);
+
+            updateModeUI();
+            if (!isEssayMode) document.getElementById('warningsContent').style.display = 'none';
+            
+            analyzeText();
+        }
+
+        function handleTextInput() {
+            safeStorage.setItem('userText', document.getElementById('textInput').value);
+            analyzeText();
+        }
+
+        function cleanText() {
+            const textarea = document.getElementById('textInput');
+            textarea.value = textarea.value
+                .replace(/[\u200B-\u200D\uFEFF]/g, '')
+                .replace(/[“„”«»]/g, '"')
+                .replace(/[‘’′`]/g, "'")
+                .replace(/\r\n/g, '\n');
+            handleTextInput();
+        }
+
+        function copyText() {
+            const textarea = document.getElementById('textInput');
+            if (!textarea.value) return;
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                const label = document.getElementById('copyLabel');
+                label.innerText = 'Copied!';
+                setTimeout(() => { label.innerText = 'Copy'; }, 1500);
+            });
+        }
+
+        function clearText() {
+            document.getElementById('textInput').value = '';
+            safeStorage.removeItem('userText');
+            safeStorage.removeItem('currentLimit');
+            safeStorage.removeItem('isWordLimit');
+            safeStorage.removeItem('foldLimit');
+            safeStorage.removeItem('isEssayMode');
+            window.speechSynthesis.cancel();
+            document.getElementById('speakLabel').innerText = 'Read';
+            analyzeText();
+        }
+
+        function speakText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) return;
+
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                document.getElementById('speakLabel').innerText = 'Read';
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.onend = () => { document.getElementById('speakLabel').innerText = 'Read'; };
+            document.getElementById('speakLabel').innerText = 'Stop';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function analyzeText() {
+            const text = document.getElementById('textInput').value;
+            
+            const characters = text.length;
+            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            const sentences = text.trim() === '' ? 0 : text.split(/[.!?]+/).filter(Boolean).length;
+            const paragraphs = text.trim() === '' ? 0 : text.split(/\n+/).filter(Boolean).length;
+
+            const emojiRegex = /\p{Extended_Pictographic}/gu;
+            const emojis = text.match(emojiRegex) ? text.match(emojiRegex).length : 0;
+            const hashtags = text.match(/#[a-zA-Z0-9_]+/g) ? text.match(/#[a-zA-Z0-9_]+/g).length : 0;
+            const citations = text.match(/\([A-Za-z]+(?:\s+et al\.)?,\s*\d{4}\)|\[\d+\]/g) ? text.match(/\([A-Za-z]+(?:\s+et al\.)?,\s*\d{4}\)|\[\d+\]/g).length : 0;
+            
+            const readSeconds = Math.ceil((words / 200) * 60);
+            let readTimeString = readSeconds < 60 ? `${readSeconds}s` : `${Math.ceil(readSeconds / 60)}m`;
+            if (words === 0) readTimeString = '0s';
+
+            document.getElementById('wordCount').innerText = words.toLocaleString();
+            document.getElementById('charCount').innerText = characters.toLocaleString();
+            document.getElementById('sentenceCount').innerText = sentences.toLocaleString();
+            document.getElementById('paragraphCount').innerText = paragraphs.toLocaleString();
+            document.getElementById('hashtagCount').innerText = hashtags.toLocaleString();
+            document.getElementById('emojiCount').innerText = emojis.toLocaleString();
+            if (isEssayMode) {
+                document.getElementById('citationCount').innerText = citations.toLocaleString();
+            }
+            document.getElementById('readTime').innerText = readTimeString;
+
+            let activeWarningsCount = 0;
+
+            // 1. Fold Warning Check
+            const foldWarning = document.getElementById('foldWarning');
+            if (!isEssayMode && foldLimit > 0 && characters > foldLimit && !isWordLimit) {
+                foldWarning.style.display = 'flex';
+                document.getElementById('foldCharNum').innerText = foldLimit;
+                activeWarningsCount++;
+            } else {
+                foldWarning.style.display = 'none';
+            }
+
+            // 2. Overused/Crutch Word Repetition Warning Check
+            const repetitionWarning = document.getElementById('repetitionWarning');
+            const repetitionListEl = document.getElementById('repetitionList');
+            if (isEssayMode && words > 3) {
+                const crutchWatchlist = new Set([
+                    'very','really','just','actually','basically','literally','suddenly',
+                    'things','stuff','good','bad','important','always','never',
+                    'completely','totally','somewhat','definitely','thing','got','said','thus','hence'
+                ]);
+                const cleanWords = text.toLowerCase().match(/\b[a-z]{3,}\b/g) || []; 
+                const wordFreq = {};
+                cleanWords.forEach(w => {
+                    if (crutchWatchlist.has(w)) {
+                        wordFreq[w] = (wordFreq[w] || 0) + 1;
+                    }
+                });
+                const overused = Object.entries(wordFreq)
+                    .filter(([w, count]) => count >= 2)
+                    .map(([w]) => `${w} (${wordFreq[w]}x)`);
+                
+                if (overused.length > 0) {
+                    repetitionWarning.style.display = 'flex';
+                    repetitionListEl.innerText = overused.slice(0, 3).join(', ');
+                    activeWarningsCount++;
+                } else {
+                    repetitionWarning.style.display = 'none';
+                }
+            } else {
+                repetitionWarning.style.display = 'none';
+            }
+
+            // Badge Update
+            const warningBadge = document.getElementById('warningBadge');
+            if (activeWarningsCount > 0) {
+                warningBadge.style.display = 'inline-block';
+                warningBadge.innerText = activeWarningsCount;
+            } else {
+                warningBadge.style.display = 'none';
+            }
+
+            // Progress bar update
+            if (currentLimit > 0) {
+                const currentMetric = isWordLimit ? words : characters;
+                const percentage = Math.min(Math.round((currentMetric / currentLimit) * 100), 100);
+                const progressBar = document.getElementById('progressBar');
+                progressBar.style.width = `${percentage}%`;
+                
+                progressBar.className = 'progress-bar-fill';
+                if (currentMetric > currentLimit) {
+                    progressBar.classList.add('exceeded');
+                } else if (percentage >= 85) {
+                    progressBar.classList.add('warning');
+                }
+
+                const limitCountText = document.getElementById('limitCountText');
+                if (displayMode === 'ratio') {
+                    limitCountText.innerText = `${currentMetric.toLocaleString()} / ${currentLimit.toLocaleString()}`;
+                } else {
+                    const diff = currentLimit - currentMetric;
+                    limitCountText.innerText = diff >= 0 ? `${diff.toLocaleString()} left` : `+${Math.abs(diff).toLocaleString()} over`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
